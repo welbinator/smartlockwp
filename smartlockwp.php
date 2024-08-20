@@ -28,6 +28,8 @@ require __DIR__ . '/vendor/autoload.php';
 require plugin_dir_path(__FILE__) . 'includes/class-smartlockwp-seam-client.php';
 require plugin_dir_path(__FILE__) . 'includes/class-smartlockwp-admin.php';
 require plugin_dir_path(__FILE__) . 'includes/integrations/motopress-hotel-booking/class-smartlockwp-motopress-metabox.php';
+require_once plugin_dir_path(__FILE__) . 'includes/integrations/motopress-hotel-booking/class-smartlockwp-booking-handler.php';
+
 
 /**
  * Begins execution of the plugin.
@@ -35,6 +37,7 @@ require plugin_dir_path(__FILE__) . 'includes/integrations/motopress-hotel-booki
 function run_smartlockwp() {
     new SmartLockWP_Admin();
     new SmartLockWP_Motopress_Metabox();
+    new SmartLockWP_Booking_Handler();
 }
 
 run_smartlockwp();
