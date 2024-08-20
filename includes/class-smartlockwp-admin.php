@@ -113,7 +113,7 @@ class SmartLockWP_Admin {
     }
 
     public function generate_random_access_code() {
-        $lock_name = 'FRONT DOOR'; // The name of the lock you want to generate a code for
+        $lock_name = 'FRONT DOOR'; 
     
         if (!$this->client) {
             $this->initialize_seam_client();

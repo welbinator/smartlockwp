@@ -34,7 +34,12 @@ class SmartLockWP_Booking_Handler {
                 continue;
             }
     
-            $email = $booking->getCustomer()->getEmail();
+            $customer = $booking->getCustomer();
+            $email = $customer->getEmail();
+            $first_name = $customer->getFirstName();
+            $last_name = $customer->getLastName();
+            $label = trim($first_name . ' ' . $last_name);
+
             error_log('Customer Email: ' . $email);
     
             if (!$email) {
@@ -43,14 +48,13 @@ class SmartLockWP_Booking_Handler {
             }
     
             foreach ($selected_locks as $lock_id) {
-                $access_code = $this->generate_access_code($lock_id);
+                $access_code = $this->generate_access_code($lock_id, $label);
                 $this->send_access_code_email($email, $access_code, $lock_id);
             }
         }
     }
     
-    
-    public function generate_access_code($lock_id) {
+    public function generate_access_code($lock_id, $label) {
         error_log('Attempting to generate access code for Lock ID: ' . $lock_id);
         
         // Generate a random 4-digit code
@@ -58,10 +62,10 @@ class SmartLockWP_Booking_Handler {
         
         try {
             $response = $this->seam_client->get_client()->access_codes->create(
-                $lock_id, 
-                null, // The second argument, which can be null
-                false, // The third argument, which must be a boolean or null
-                $random_code // The generated random code
+                $lock_id,
+                allow_external_modification: false, // Specify as boolean
+                code: $random_code, // The generated random code
+                name: $label // Use the label with the customer's name
             );
     
             error_log('Generated access code: ' . $response->code . ' for Lock ID: ' . $lock_id);
@@ -71,9 +75,6 @@ class SmartLockWP_Booking_Handler {
             return null;
         }
     }
-    
-    
-    
 
     private function send_access_code_email($email, $access_code, $lock_id) {
         $subject = 'Your Access Code';
