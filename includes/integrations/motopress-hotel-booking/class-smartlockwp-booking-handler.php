@@ -25,7 +25,8 @@ class SmartLockWP_Booking_Handler {
             $room_id = $reserved_room->getRoomId();
             error_log('Room ID: ' . $room_id);
     
-            $selected_locks = get_post_meta($room_id, 'smartlockwp_selected_locks', true);
+            // Retrieve locks using the same logic as in the metabox
+            $selected_locks = get_post_meta($room_id, '_smartlockwp_selected_locks', true);
             error_log('Raw Selected Locks Data: ' . print_r($selected_locks, true));
     
             if (empty($selected_locks)) {
@@ -48,15 +49,19 @@ class SmartLockWP_Booking_Handler {
         }
     }
     
+    
     public function generate_access_code($lock_id) {
         error_log('Attempting to generate access code for Lock ID: ' . $lock_id);
+        
+        // Generate a random 4-digit code
+        $random_code = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
         
         try {
             $response = $this->seam_client->get_client()->access_codes->create(
                 $lock_id, 
                 null, // The second argument, which can be null
                 false, // The third argument, which must be a boolean or null
-                '1234' // This is the fourth argument, the actual access code as a string
+                $random_code // The generated random code
             );
     
             error_log('Generated access code: ' . $response->code . ' for Lock ID: ' . $lock_id);
@@ -66,6 +71,7 @@ class SmartLockWP_Booking_Handler {
             return null;
         }
     }
+    
     
     
 
