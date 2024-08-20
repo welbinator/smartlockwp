@@ -10,7 +10,7 @@ class SmartLockWP_Admin {
         $this->initialize_seam_client();
         add_action('admin_menu', array($this, 'add_plugin_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
-        error_log('SmartLockWP_Admin initialized.');
+        
 
         // Handle the generate access code action
         if (isset($_POST['smartlockwp_generate_code'])) {
@@ -27,7 +27,7 @@ class SmartLockWP_Admin {
     }
 
     public function add_plugin_admin_menu() {
-        error_log('add_plugin_admin_menu called.');
+        
         add_menu_page(
             'SmartLockWP Settings',
             'SmartLockWP',
@@ -40,12 +40,12 @@ class SmartLockWP_Admin {
     }
 
     public function display_plugin_admin_page() {
-        error_log('display_plugin_admin_page called.');
+       
         require_once plugin_dir_path(__FILE__) . 'partials/smartlockwp-admin-display.php';
     }
 
     public function register_settings() {
-        error_log('register_settings called.');
+        
         register_setting('smartlockwp_options', 'smartlockwp_seam_api_key');
         register_setting('smartlockwp_options', 'smartlockwp_smart_lock');
 
@@ -77,17 +77,16 @@ class SmartLockWP_Admin {
 
     public function validate_api_key($old_value, $new_value, $option) {
         if ($option === 'smartlockwp_seam_api_key') {
-            error_log('validate_api_key called.');
-            error_log('New API Key: ' . $new_value);
+            
 
             try {
                 $this->client = new SeamClient($new_value);
-                error_log('SeamClient initialized.');
+                
                 $this->client->locks->list();
-                error_log('API Key is valid.');
+                
                 add_settings_error('smartlockwp_seam_api_key', 'valid_key', 'API Key Valid', 'updated');
             } catch (Exception $e) {
-                error_log('API Key validation failed: ' . $e->getMessage());
+                
                 add_settings_error('smartlockwp_seam_api_key', 'invalid_key', 'Invalid API Key: ' . $e->getMessage(), 'error');
             }
         }
@@ -95,7 +94,7 @@ class SmartLockWP_Admin {
 
     public function seam_api_key_callback() {
         $api_key = get_option('smartlockwp_seam_api_key');
-        error_log('seam_api_key_callback called. Retrieved API Key: ' . $api_key);
+        
         ?>
         <input type="text" name="smartlockwp_seam_api_key" value="<?php echo esc_attr($api_key); ?>" size="40">
         <p class="description">Enter your Seam.co API key here.</p>
@@ -104,7 +103,7 @@ class SmartLockWP_Admin {
 
     public function smart_lock_callback() {
         $smart_lock = get_option('smartlockwp_smart_lock');
-        error_log('smart_lock_callback called. Retrieved Smart Lock: ' . $smart_lock);
+        
         ?>
         <select name="smartlockwp_smart_lock">
             <option value="august" <?php selected($smart_lock, 'august'); ?>>August</option>
@@ -130,15 +129,15 @@ class SmartLockWP_Admin {
                         code: (string)rand(1000, 9999), // Generate a random 4-digit code
                         name: 'Test Access Code'
                     );
-                    error_log('Access code generated: ' . print_r($access_code, true));
+                    
                     echo '<div class="notice notice-success"><p>Access code generated successfully: ' . $access_code->code . '</p></div>';
                     return;
                 }
             }
-            error_log('Lock not found.');
+            
             echo '<div class="notice notice-error"><p>Lock not found.</p></div>';
         } catch (Exception $e) {
-            error_log('Failed to generate access code: ' . $e->getMessage());
+            
             echo '<div class="notice notice-error"><p>Failed to generate access code: ' . $e->getMessage() . '</p></div>';
         }
     }

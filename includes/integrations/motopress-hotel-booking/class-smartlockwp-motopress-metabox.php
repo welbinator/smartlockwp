@@ -38,7 +38,7 @@ class SmartLockWP_Motopress_Metabox {
         }
 
         foreach ($locks as $lock) {
-            error_log(print_r($lock, true)); // Log the entire lock object to see its properties
+           
 
             $lock_id = esc_attr($lock->device_id);
             $lock_name = esc_html($lock->display_name); // Use display_name for the lock name
@@ -63,10 +63,10 @@ class SmartLockWP_Motopress_Metabox {
     private function fetch_seam_locks() {
         try {
             $locks = $this->seam_client->get_client()->locks->list();
-            error_log('Locks fetched successfully.');
+           
             return $locks ?? array();
         } catch (Exception $e) {
-            error_log('Error fetching locks: ' . $e->getMessage());
+          
             return array(); // Handle exceptions and return an empty array
         }
     }
