@@ -21,11 +21,9 @@ class SmartLockWP_Booking_Handler {
             return;
         }
     
-        // Retrieve booking dates
-        $start_date = $booking->getCheckInDate();  // Adjust based on your booking object
-        $end_date = $booking->getCheckOutDate();   // Adjust based on your booking object
+        $start_date = $booking->getCheckInDate();  
+        $end_date = $booking->getCheckOutDate();   
     
-        // Convert to string format required by the API
         $start_time = $start_date->format(DateTime::ATOM);
         $end_time = $end_date->format(DateTime::ATOM);
     
@@ -55,9 +53,16 @@ class SmartLockWP_Booking_Handler {
             }
     
             foreach ($selected_locks as $lock_id) {
+                // Fetch lock details using the Seam API client to get the display_name
+                $lock = $this->seam_client->get_client()->devices->get($lock_id);
+                $lock_name = $lock->display_name; // Get the display name from the API response
+            
+                error_log('Lock Name Retrieved: ' . $lock_name);
+            
                 $access_code = $this->generate_access_code($lock_id, $label, $start_time, $end_time);
-                $this->send_access_code_email($email, $access_code, $lock_id);
+                $this->send_access_code_email($email, $access_code, $lock_name);
             }
+            
         }
     }
     
@@ -87,9 +92,9 @@ class SmartLockWP_Booking_Handler {
     
     
 
-    private function send_access_code_email($email, $access_code, $lock_id) {
+    private function send_access_code_email($email, $access_code, $lock_name) {
         $subject = 'Your Access Code';
-        $message = "Your access code for lock ID $lock_id is: $access_code";
+        $message = "Your access code for lock $lock_name is: $access_code";
         wp_mail($email, $subject, $message);
         error_log("Access code email sent to: $email");
     }
