@@ -11,7 +11,7 @@ class SmartLockWP_Booking_Handler {
 
     public function handle_booking_confirmation($booking) {
         error_log('handle_booking_confirmation called.');
-    
+
         $booking_id = $booking->getId();
         error_log('Booking ID: ' . $booking_id);
     
@@ -20,15 +20,21 @@ class SmartLockWP_Booking_Handler {
             error_log('No Room IDs found.');
             return;
         }
-    
+
         // Get the booking start and end dates from the booking object
         $start_date = $booking->getCheckInDate();
         $end_date = $booking->getCheckOutDate();
-    
-        // Explicitly set the start and end times in Eastern Time
-        $start_time = new DateTime($start_date->format('Y-m-d') . ' 14:55:00', new DateTimeZone('America/New_York'));
-        $end_time = new DateTime($end_date->format('Y-m-d') . ' 11:05:00', new DateTimeZone('America/New_York'));
-    
+
+        // Get the check-in and check-out times from the MotoPress settings
+        $check_in_time = MPHB()->settings()->dateTime()->getCheckInTime();
+        $check_out_time = MPHB()->settings()->dateTime()->getCheckOutTime();
+        error_log('checkin time: ' . $check_in_time);
+        error_log('checkout time: ' . $check_out_time);
+
+        // Combine the dates with the correct times
+        $start_time = new DateTime($start_date->format('Y-m-d') . ' ' . $check_in_time, new DateTimeZone('America/New_York'));
+        $end_time = new DateTime($end_date->format('Y-m-d') . ' ' . $check_out_time, new DateTimeZone('America/New_York'));
+
         foreach ($reserved_rooms as $reserved_room) {
             $room_id = $reserved_room->getRoomId();
             error_log('Room ID: ' . $room_id);
@@ -56,7 +62,7 @@ class SmartLockWP_Booking_Handler {
     
             foreach ($selected_locks as $lock_id) {
                 $lock = $this->seam_client->get_client()->devices->get($lock_id);
-                $lock_name = $lock->display_name; // Get the display name from the API response
+                $lock_name = $lock->display_name;
             
                 error_log('Lock Name Retrieved: ' . $lock_name);
             
@@ -65,7 +71,7 @@ class SmartLockWP_Booking_Handler {
             }
         }
     }
-    
+
     public function generate_access_code($lock_id, $label, DateTime $start_time, DateTime $end_time) {
         error_log('Attempting to generate access code for Lock ID: ' . $lock_id);
     
@@ -97,11 +103,7 @@ class SmartLockWP_Booking_Handler {
             return null;
         }
     }
-    
-    
-    
-    
-    
+
     private function generate_random_code() {
         return str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     }
