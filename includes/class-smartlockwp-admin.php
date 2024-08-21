@@ -10,12 +10,6 @@ class SmartLockWP_Admin {
         $this->initialize_seam_client();
         add_action('admin_menu', array($this, 'add_plugin_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
-        
-
-        // Handle the generate access code action
-        if (isset($_POST['smartlockwp_generate_code'])) {
-            $this->generate_random_access_code();
-        }
     }
 
     private function initialize_seam_client() {
@@ -110,36 +104,6 @@ class SmartLockWP_Admin {
             <!-- Additional options can be added here -->
         </select>
         <?php
-    }
-
-    public function generate_random_access_code() {
-        $lock_name = 'FRONT DOOR'; 
-    
-        if (!$this->client) {
-            $this->initialize_seam_client();
-        }
-    
-        try {
-            $locks = $this->client->locks->list();
-            foreach ($locks as $lock) {
-                if ($lock->display_name === $lock_name) {
-                    $access_code = $this->client->access_codes->create(
-                        $lock->device_id,
-                        allow_external_modification: false, // Specify as boolean
-                        code: (string)rand(1000, 9999), // Generate a random 4-digit code
-                        name: 'Test Access Code'
-                    );
-                    
-                    echo '<div class="notice notice-success"><p>Access code generated successfully: ' . $access_code->code . '</p></div>';
-                    return;
-                }
-            }
-            
-            echo '<div class="notice notice-error"><p>Lock not found.</p></div>';
-        } catch (Exception $e) {
-            
-            echo '<div class="notice notice-error"><p>Failed to generate access code: ' . $e->getMessage() . '</p></div>';
-        }
     }
     
 }
