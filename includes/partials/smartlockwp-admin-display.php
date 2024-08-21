@@ -8,10 +8,5 @@
         ?>
     </form>
 
-    <form method="post" action="">
-        <h2>Generate Random Access Code</h2>
-        <p>Click the button below to generate a random access code for the FRONT DOOR lock:</p>
-        <input type="hidden" name="smartlockwp_generate_code" value="1">
-        <?php submit_button('Generate Access Code'); ?>
-    </form>
+    
 </div>

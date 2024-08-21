@@ -58,13 +58,7 @@ class SmartLockWP_Admin {
             'smartlockwp_settings_section'
         );
 
-        add_settings_field(
-            'smartlockwp_smart_lock',
-            'Choose Smart Lock',
-            array($this, 'smart_lock_callback'),
-            'smartlockwp',
-            'smartlockwp_settings_section'
-        );
+       
 
         add_action('updated_option', array($this, 'validate_api_key'), 10, 3);
     }

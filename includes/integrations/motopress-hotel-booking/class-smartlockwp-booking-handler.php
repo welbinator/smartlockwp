@@ -21,11 +21,13 @@ class SmartLockWP_Booking_Handler {
             return;
         }
     
-        $start_date = $booking->getCheckInDate();  
-        $end_date = $booking->getCheckOutDate();   
+        // Get the booking start and end dates from the booking object
+        $start_date = $booking->getCheckInDate();
+        $end_date = $booking->getCheckOutDate();
     
-        $start_time = $start_date->format(DateTime::ATOM);
-        $end_time = $end_date->format(DateTime::ATOM);
+        // Explicitly set the start and end times in Eastern Time
+        $start_time = new DateTime($start_date->format('Y-m-d') . ' 14:55:00', new DateTimeZone('America/New_York'));
+        $end_time = new DateTime($end_date->format('Y-m-d') . ' 11:05:00', new DateTimeZone('America/New_York'));
     
         foreach ($reserved_rooms as $reserved_room) {
             $room_id = $reserved_room->getRoomId();
@@ -53,7 +55,6 @@ class SmartLockWP_Booking_Handler {
             }
     
             foreach ($selected_locks as $lock_id) {
-                // Fetch lock details using the Seam API client to get the display_name
                 $lock = $this->seam_client->get_client()->devices->get($lock_id);
                 $lock_name = $lock->display_name; // Get the display name from the API response
             
@@ -62,24 +63,31 @@ class SmartLockWP_Booking_Handler {
                 $access_code = $this->generate_access_code($lock_id, $label, $start_time, $end_time);
                 $this->send_access_code_email($email, $access_code, $lock_name);
             }
-            
         }
     }
     
-    public function generate_access_code($lock_id, $label, $start_time, $end_time) {
+    public function generate_access_code($lock_id, $label, DateTime $start_time, DateTime $end_time) {
         error_log('Attempting to generate access code for Lock ID: ' . $lock_id);
     
-        // Generate a random 4-digit code
-        $random_code = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+        // Convert to UTC before sending to the Seam API
+        $start_time->setTimezone(new DateTimeZone('UTC'));
+        $end_time->setTimezone(new DateTimeZone('UTC'));
     
         try {
             $response = $this->seam_client->get_client()->access_codes->create(
-                $lock_id,
-                allow_external_modification: false,
-                code: $random_code,
-                name: $label,
-                starts_at: $start_time, // ISO 8601 format string
-                ends_at: $end_time      // ISO 8601 format string
+                $lock_id, 
+                false, 
+                null, 
+                $this->generate_random_code(), 
+                null, 
+                $end_time->format('Y-m-d\TH:i:s\Z'), 
+                null, 
+                null, 
+                null, 
+                null, 
+                $label, 
+                null, 
+                $start_time->format('Y-m-d\TH:i:s\Z')
             );
     
             error_log('Generated access code: ' . $response->code . ' for Lock ID: ' . $lock_id);
@@ -91,6 +99,12 @@ class SmartLockWP_Booking_Handler {
     }
     
     
+    
+    
+    
+    private function generate_random_code() {
+        return str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+    }
 
     private function send_access_code_email($email, $access_code, $lock_name) {
         $subject = 'Your Access Code';
