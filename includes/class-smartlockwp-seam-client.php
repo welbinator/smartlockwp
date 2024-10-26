@@ -8,7 +8,6 @@ if (!file_exists($autoload_path)) {
 
 require $autoload_path;
 
-// Use the correct namespace for the SeamClient
 use Seam\SeamClient;
 
 class SmartLockWP_Seam_Client {
@@ -16,14 +15,19 @@ class SmartLockWP_Seam_Client {
     private $client;
 
     public function __construct() {
-        // Fetch the API key from the WordPress options table
         $api_key = get_option('smartlockwp_seam_api_key');
-
-        // Initialize the Seam API client with the API key
-        $this->client = new SeamClient($api_key);
+        
+        // Only initialize if the API key is available
+        if (!empty($api_key)) {
+            $this->client = new SeamClient($api_key);
+        }
     }
 
     public function get_client() {
+        if (!$this->client) {
+            throw new \Exception('Seam API client is not initialized. Ensure the API key is set in the plugin settings.');
+        }
         return $this->client;
     }
 }
+

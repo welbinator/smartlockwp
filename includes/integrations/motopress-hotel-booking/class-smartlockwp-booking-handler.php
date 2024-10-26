@@ -105,7 +105,7 @@ class SmartLockWP_Booking_Handler {
                 null, 
                 $start_time->format('Y-m-d\TH:i:s\Z')
             );
-            return $response->access_code_id;
+            return $response->code;
         } catch (Exception $e) {
             return null;
         }
