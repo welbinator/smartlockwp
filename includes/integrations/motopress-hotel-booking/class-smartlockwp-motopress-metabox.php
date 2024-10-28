@@ -50,20 +50,26 @@ class SmartLockWP_Motopress_Metabox {
     }
 
     public function save_selected_locks($post_id) {
+        error_log("SmartLockWP: Entered save_selected_locks for Room ID $post_id.");
+    
+        // Check if locks were submitted
         if (!isset($_POST['smartlockwp_locks'])) {
             delete_post_meta($post_id, '_smartlockwp_selected_locks');
             error_log("SmartLockWP: No locks selected, meta deleted for Room ID $post_id");
             return;
         }
     
+        // Sanitize and save selected locks
         $selected_locks = array_map('sanitize_text_field', $_POST['smartlockwp_locks']);
-        update_post_meta($post_id, '_smartlockwp_selected_locks', $selected_locks);
+        $updated = update_post_meta($post_id, '_smartlockwp_selected_locks', $selected_locks);
+        error_log("SmartLockWP: Meta update status for Room ID $post_id: " . ($updated ? 'Success' : 'Failed'));
     
-        error_log("SmartLockWP: Locks saved for Room ID $post_id: " . print_r($selected_locks, true));
-        // Add a direct retrieval check
-        $retrieved_locks = get_post_meta($post_id, '_smartlockwp_selected_locks', true);
+        // Check the data format directly in the database
+        $retrieved_locks = maybe_unserialize(get_post_meta($post_id, '_smartlockwp_selected_locks', true));
         error_log("SmartLockWP: Retrieved locks after save for Room ID $post_id: " . print_r($retrieved_locks, true));
     }
+    
+    
     
 
     private function fetch_seam_locks() {
