@@ -22,8 +22,13 @@ class SmartLockWP_Booking_Handler {
         $check_in_time = MPHB()->settings()->dateTime()->getCheckInTime();
         $check_out_time = MPHB()->settings()->dateTime()->getCheckOutTime();
 
-        $start_time = new DateTime($start_date->format('Y-m-d') . ' ' . $check_in_time, new DateTimeZone('America/New_York'));
-        $end_time = new DateTime($end_date->format('Y-m-d') . ' ' . $check_out_time, new DateTimeZone('America/New_York'));
+        $start_time = new DateTime($start_date->format('Y-m-d') . ' ' . $check_in_time, new DateTimeZone('America/Chicago'));
+        $end_time = new DateTime($end_date->format('Y-m-d') . ' ' . $check_out_time, new DateTimeZone('America/Chicago'));
+        error_log("Check-in Time: " . $check_in_time);
+        error_log("Check-out Time: " . $check_out_time);
+        error_log("Start Time: " . $start_time->format('Y-m-d H:i:s T'));
+error_log("End Time: " . $end_time->format('Y-m-d H:i:s T'));
+
 
         foreach ($reserved_rooms as $reserved_room) {
             $room_id = $reserved_room->getRoomId();
@@ -91,20 +96,22 @@ class SmartLockWP_Booking_Handler {
     
         try {
             $response = $this->seam_client->get_client()->access_codes->create(
-                $lock_id, 
-                false, 
-                null, 
-                $this->generate_random_code(), 
-                null, 
-                $end_time->format('Y-m-d\TH:i:s\Z'), 
-                null, 
-                null, 
-                null, 
-                null, 
-                $label, 
-                null, 
+                $lock_id,
+                false,
+                null,
+                $this->generate_random_code(),
+                null,
+                $end_time->format('Y-m-d\TH:i:s\Z'),
+                null,
+                null,
+                null,
+                null,
+                $label,
+                null,  // Preferred code length as null
+                null,  // This was previously missing, for prefer_native_scheduling
                 $start_time->format('Y-m-d\TH:i:s\Z')
             );
+            
             return $response->code;
         } catch (Exception $e) {
             return null;
