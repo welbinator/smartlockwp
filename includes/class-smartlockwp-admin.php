@@ -13,12 +13,16 @@ class SmartLockWP_Admin {
     }
 
     private function initialize_seam_client() {
-        $apiKey = get_option('smartlockwp_seam_api_key'); // Get the API key from the stored settings
+        $apiKey = get_option('smartlockwp_seam_api_key');
         if ($apiKey) {
-            // Initialize the Seam client
             $this->client = new SeamClient($apiKey);
         }
     }
+    
+    public function is_api_key_valid() {
+        return isset($this->client);
+    }
+    
 
     public function add_plugin_admin_menu() {
         

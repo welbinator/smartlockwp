@@ -9,8 +9,23 @@ class SmartLockWP_Booking_Handler {
         add_action('mphb_booking_confirmed', [$this, 'handle_booking_confirmation'], 10, 2);
         add_action('mphb_booking_cancelled', [$this, 'handle_booking_cancellation'], 10, 1);
     }
+    private function is_api_key_valid() {
+        $api_key = get_option('smartlockwp_seam_api_key');
+        return !empty($api_key);
+    }
+    
 
     public function handle_booking_confirmation($booking) {
+        if (!$this->is_api_key_valid()) {
+            error_log("SmartLockWP: No API key found. Plugin cannot proceed without a valid API key.");
+            return;
+        }
+        
+        // Then proceed with the existing Seam client check:
+        if (!$this->seam_client || !$this->seam_client->get_client()) {
+            error_log("SmartLockWP: Seam API client is not initialized.");
+            return;
+        }
         $booking_id = $booking->getId();
         $reserved_rooms = $booking->getReservedRooms();
         if (empty($reserved_rooms)) {
@@ -24,10 +39,7 @@ class SmartLockWP_Booking_Handler {
 
         $start_time = new DateTime($start_date->format('Y-m-d') . ' ' . $check_in_time, new DateTimeZone('America/Chicago'));
         $end_time = new DateTime($end_date->format('Y-m-d') . ' ' . $check_out_time, new DateTimeZone('America/Chicago'));
-        error_log("Check-in Time: " . $check_in_time);
-        error_log("Check-out Time: " . $check_out_time);
-        error_log("Start Time: " . $start_time->format('Y-m-d H:i:s T'));
-error_log("End Time: " . $end_time->format('Y-m-d H:i:s T'));
+       
 
 
         foreach ($reserved_rooms as $reserved_room) {
@@ -62,8 +74,13 @@ error_log("End Time: " . $end_time->format('Y-m-d H:i:s T'));
     }
 
     public function handle_booking_cancellation($booking) {
+        if (!$this->is_api_key_valid()) {
+            error_log("SmartLockWP: No API key found. Cannot delete access codes without a valid API key.");
+            return;
+        }
         $this->delete_access_codes($booking);
     }
+    
 
     private function delete_access_codes($booking) {
         $booking_id = $booking->getId();
