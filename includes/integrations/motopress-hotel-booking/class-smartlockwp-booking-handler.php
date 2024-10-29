@@ -75,9 +75,9 @@ class SmartLockWP_Booking_Handler {
 
     public function handle_booking_cancellation($booking) {
         if (!$this->is_api_key_valid()) {
-            error_log("SmartLockWP: No API key found. Cannot delete access codes without a valid API key.");
+          
             return;
-        }
+        } else 
         $this->delete_access_codes($booking);
     }
     
@@ -95,8 +95,12 @@ class SmartLockWP_Booking_Handler {
             }
 
             foreach ($selected_locks as $lock_id) {
+               
+
                 $access_code_id = get_post_meta($booking_id, '_smartlockwp_access_code_' . $lock_id, true);
+                
                 if ($access_code_id) {
+                    error_log("SmartLockWP: Attempting to delete access code for Lock ID $lock_id with Access Code ID $access_code_id");
                     try {
                         $this->seam_client->get_client()->access_codes->delete($access_code_id);
                     } catch (Exception $e) {
@@ -129,7 +133,7 @@ class SmartLockWP_Booking_Handler {
                 $start_time->format('Y-m-d\TH:i:s\Z')
             );
             
-            return $response->code;
+            return $response->access_code_id;
         } catch (Exception $e) {
             return null;
         }
